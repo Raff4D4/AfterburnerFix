@@ -49,7 +49,7 @@ func _ready() -> void:
 	_apply_data()
 
 func is_alive() -> bool:
-	return not _dead
+	return not _dead and is_inside_tree() and not is_queued_for_deletion()
 
 func _physics_process(delta: float) -> void:
 	if _dead:
@@ -101,83 +101,67 @@ func _is_inside_view(margin: float) -> bool:
 	return offset.x <= limit.x and offset.y <= limit.y
 
 func _move(delta: float) -> void:
-	var pattern := data.move_pattern if data != null else &"straight"
-	var speed := movement_speed * _speed_mult
-	match pattern:
-		&"static":
-			pass
+	var behavior: StringName = data.move_pattern if (data != null and not data.move_pattern.is_empty()) else &"straight"
+	var effective_speed := movement_speed * _speed_mult
+	match behavior:
 		&"sine":
-			global_position.y += speed * delta
+			_traveled += effective_speed * delta
+			global_position.y = _origin.y + _traveled
 			global_position.x = _origin.x + sin(_age * sine_frequency) * sine_amplitude
 		&"hover":
 			if _traveled < hover_distance:
-				var step := minf(speed * delta, hover_distance - _traveled)
+				var step := minf(effective_speed * delta, hover_distance - _traveled)
 				global_position.y += step
 				_traveled += step
+			else:
+				global_position.x = _origin.x + sin(_age * 1.5) * 20.0
 		&"dive":
-			var dive_speed := speed
-			if _age > dive_delay:
-				dive_speed = speed * (1.0 + 2.0 * minf(_age - dive_delay, 1.0))
-			global_position.y += dive_speed * delta
+			if _age < dive_delay:
+				global_position.y += effective_speed * 0.3 * delta
+			else:
+				var player := get_tree().get_first_node_in_group(&"player") as Node2D
+				var heading := Vector2.DOWN
+				if player != null:
+					heading = (player.global_position - global_position).normalized()
+				global_position += heading * effective_speed * 1.5 * delta
+		&"turret", &"static":
+			pass
 		_:
-			global_position.y += speed * delta
+			global_position.y += effective_speed * delta
 
 func _update_fire(delta: float) -> void:
-	var pattern := data.fire_pattern if data != null else &"none"
-	if pattern != &"none" and _has_entered_view:
-		_fire_timer -= delta
-		if _fire_timer <= 0.0:
-			_fire_timer = _fire_interval
-			_load_pattern(pattern)
+	if not _has_entered_view or _fire_interval <= 0.0:
+		return
 	_drain_shot_queue(delta)
+	_fire_timer -= delta
+	if _fire_timer > 0.0:
+		return
+	_fire_timer = _fire_interval
+	_fire_attack()
 
-func _load_pattern(pattern: StringName) -> void:
+func _fire_attack() -> void:
+	var bullet_scene := data.bullet_scene if data != null and data.bullet_scene != null else fallback_bullet_scene
+	if bullet_scene == null:
+		return
+	var pattern: StringName = data.fire_pattern if (data != null and not data.fire_pattern.is_empty()) else &"straight"
 	match pattern:
-		&"straight":
-			_queue([Vector2.DOWN], 0.0)
-		&"burst3":
-			_queue([Vector2.DOWN, Vector2.DOWN, Vector2.DOWN], BURST_GAP)
+		&"burst", &"burst3":
+			_queue_shots([Vector2.DOWN, Vector2.DOWN, Vector2.DOWN], BURST_GAP)
 		&"aimed":
-			_queue([_aim_at_player()], 0.0)
-		&"spread_fan":
-			_queue(_fan(5, 60.0), 0.0)
-		&"triple":
-			_queue(_fan(3, 60.0), 0.0)
+			_queue_shots([_aim_at_player()], 0.0)
+		&"spread", &"spread_fan", &"triple":
+			_queue_shots(_fan(3, 40.0), 0.0)
 		&"carpet":
-			_queue(_fan(5, 110.0), 0.0)
-		&"cross_volley":
-			_queue([
-				Vector2.DOWN.rotated(deg_to_rad(-45.0)),
-				Vector2.DOWN.rotated(deg_to_rad(45.0)),
-				Vector2.DOWN.rotated(deg_to_rad(-135.0)),
-				Vector2.DOWN.rotated(deg_to_rad(135.0)),
-			], 0.0)
-		&"sweep_line":
-			_queue_line(5, 20.0)
-		_:
+			_queue_shots(_fan(5, 50.0), 0.0)
+		&"radial":
+			_queue_shots(_radial(6), 0.0)
+		&"none":
 			pass
+		_:
+			_queue_shots([Vector2.DOWN], 0.0)
 
-func _fan(count: int, spread_degrees: float) -> Array[Vector2]:
-	var directions: Array[Vector2] = []
-	var spread := deg_to_rad(spread_degrees)
-	var step := spread / float(maxi(count - 1, 1))
-	for i in count:
-		directions.append(Vector2.DOWN.rotated(-spread * 0.5 + step * float(i)))
-	return directions
-
-func _queue_line(count: int, spacing: float) -> void:
-	var directions: Array[Vector2] = []
-	var offsets: Array[Vector2] = []
-	var half := float(count - 1) * 0.5
-	for i in count:
-		directions.append(Vector2.DOWN)
-		offsets.append(Vector2((float(i) - half) * spacing, 0.0))
-	_queue(directions, 0.0)
-	_pending_offsets = offsets
-
-func _queue(directions: Array[Vector2], gap: float) -> void:
+func _queue_shots(directions: Array[Vector2], gap: float) -> void:
 	_pending_directions = directions
-	_pending_offsets.clear()
 	_pending_gap = gap
 	_shot_timer = 0.0
 
@@ -189,25 +173,16 @@ func _drain_shot_queue(delta: float) -> void:
 		return
 	if _pending_gap <= 0.0:
 		while not _pending_directions.is_empty():
-			_fire_queued_shot()
+			_fire_one_bullet(_pending_directions.pop_front())
 		return
-	_fire_queued_shot()
+	_fire_one_bullet(_pending_directions.pop_front())
 	_shot_timer = _pending_gap
 
-func _fire_queued_shot() -> void:
-	var direction: Vector2 = _pending_directions.pop_front()
-	var offset := Vector2.ZERO
-	if not _pending_offsets.is_empty():
-		offset = _pending_offsets.pop_front()
-	_spawn_bullet(direction, offset)
-
-func _spawn_bullet(direction: Vector2, offset: Vector2) -> void:
-	var scene := fallback_bullet_scene
-	if data != null and data.bullet_scene != null:
-		scene = data.bullet_scene
-	if scene == null:
+func _fire_one_bullet(direction: Vector2) -> void:
+	var bullet_scene := data.bullet_scene if data != null and data.bullet_scene != null else fallback_bullet_scene
+	if bullet_scene == null:
 		return
-	var bullet := scene.instantiate()
+	var bullet := bullet_scene.instantiate()
 	if bullet is EnemyBullet:
 		bullet.configure(fire_speed, bullet_damage, direction, bullet_tint, bullet_scale)
 	var container := _entity_container()
@@ -216,7 +191,7 @@ func _spawn_bullet(direction: Vector2, offset: Vector2) -> void:
 		return
 	container.add_child(bullet)
 	if bullet is Node2D:
-		bullet.global_position = global_position + offset
+		bullet.global_position = global_position
 
 func _aim_at_player() -> Vector2:
 	var player := get_tree().get_first_node_in_group(&"player") as Node2D
@@ -226,6 +201,25 @@ func _aim_at_player() -> Vector2:
 	if to_player.is_zero_approx():
 		return Vector2.DOWN
 	return to_player.normalized()
+
+func _fan(count: int, spread_degrees: float) -> Array[Vector2]:
+	var out: Array[Vector2] = []
+	var spread := deg_to_rad(spread_degrees)
+	var step := spread / float(maxi(count - 1, 1))
+	for i in count:
+		out.append(Vector2.DOWN.rotated(-spread * 0.5 + step * float(i)))
+	return out
+
+func _radial(count: int) -> Array[Vector2]:
+	var out: Array[Vector2] = []
+	var step := TAU / float(maxi(count, 1))
+	for i in count:
+		out.append(Vector2.DOWN.rotated(step * float(i)))
+	return out
+
+func _entity_container() -> Node:
+	var container := get_tree().get_first_node_in_group(&"entities")
+	return container if container != null else get_tree().current_scene
 
 func take_damage(amount: int = 1) -> void:
 	if _dead:
@@ -256,6 +250,7 @@ func _die() -> void:
 	var parent_node := get_parent()
 	if parent_node != null:
 		var exp_node = preload("res://effects/explosion.gd").new()
+		exp_node.scale = Vector2(0.45, 0.45)
 		parent_node.add_child(exp_node)
 		exp_node.global_position = global_position
 	var tween := create_tween()
@@ -309,21 +304,13 @@ func _spawn_drop() -> void:
 func _pick_drop() -> PackedScene:
 	var total := 0.0
 	for entry in data.drop_table:
-		total += _drop_weight(entry)
+		total += float(entry.get("weight", 1.0))
 	if total <= 0.0:
 		return null
 	var roll := randf() * total
+	var accumulated := 0.0
 	for entry in data.drop_table:
-		roll -= _drop_weight(entry)
-		if roll <= 0.0:
-			var candidate: Dictionary = entry
-			return candidate.get("scene") as PackedScene
+		accumulated += float(entry.get("weight", 1.0))
+		if roll <= accumulated:
+			return entry.get("scene") as PackedScene
 	return null
-
-func _drop_weight(entry: Variant) -> float:
-	var candidate: Dictionary = entry
-	return float(candidate.get("weight", 0.0))
-
-func _entity_container() -> Node:
-	var container := get_tree().get_first_node_in_group(&"entities")
-	return container if container != null else get_tree().current_scene

@@ -96,9 +96,9 @@ anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
 offset_left = -110.0
-offset_top = 22.0
+offset_top = 28.0
 offset_right = 110.0
-offset_bottom = 46.0
+offset_bottom = 54.0
 grow_horizontal = 2
 mouse_filter = 2
 theme_override_constants/separation = 2
@@ -106,11 +106,12 @@ theme_override_constants/separation = 2
 [node name="BossName" type="Label" parent="BossBar"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.82, 0.82, 1)
+theme_override_font_sizes/font_size = 11
 text = "BOSS"
 horizontal_alignment = 1
 
 [node name="BossHealth" type="ProgressBar" parent="BossBar"]
-custom_minimum_size = Vector2(220, 8)
+custom_minimum_size = Vector2(200, 6)
 layout_mode = 2
 max_value = 1.0
 value = 1.0

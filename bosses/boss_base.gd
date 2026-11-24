@@ -21,7 +21,7 @@ const ADD_INTERVAL := 3.0
 @export var bullet_damage := 1
 @export var hover_amplitude := 90.0
 @export var hover_frequency := 0.35
-@export var hover_depth := 80.0
+@export var hover_depth := 20.0
 
 @export var death_sfx: AudioStream
 @export var hit_sfx: AudioStream
@@ -62,6 +62,9 @@ func _ready() -> void:
 	_fire_timer = 1.2
 	EventBus.boss_health_changed.emit(_health, _max_health)
 	EventBus.boss_phase_changed.emit(_phase, _phase_count)
+
+func is_alive() -> bool:
+	return not _dead and is_inside_tree() and not is_queued_for_deletion()
 
 func _physics_process(delta: float) -> void:
 	if _dead:
@@ -210,9 +213,9 @@ func _die() -> void:
 	var parent_node := get_parent()
 	if parent_node != null:
 		var exp_node = preload("res://effects/explosion.gd").new()
+		exp_node.scale = Vector2(1.0, 1.0)
 		parent_node.add_child(exp_node)
 		exp_node.global_position = global_position
-		exp_node.scale = scale * 1.5
 	var tween := create_tween()
 	tween.tween_property(self, "scale", scale * 1.4, 0.5)
 	tween.parallel().tween_property(_sprite, "modulate:a", 0.0, 0.5)

@@ -1,8 +1,4 @@
 extends Node
-## The single door for scene changes (design spec §5.3, §5.6).
-##
-## Fade, cleanup and level-data loading live here so no level or menu has to
-## know how transitions look or what a level needs before it starts.
 
 const LEVEL_DATA_DIR := "res://data/levels/"
 const LEVEL_SCENE_DIR := "res://levels/"
@@ -11,7 +7,6 @@ const FADE_SECONDS := 0.3
 
 var _fade: ColorRect
 var _busy := false
-
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -27,17 +22,12 @@ func _ready() -> void:
 	layer.add_child(_fade)
 	_fade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
-
 func level_data_path(index: int) -> String:
 	return "%slevel_%02d.tres" % [LEVEL_DATA_DIR, index]
-
 
 func level_scene_path(index: int) -> String:
 	return "%slevel_%02d.tscn" % [LEVEL_SCENE_DIR, index]
 
-
-## Loads data/levels/level_0N.tres, hands it to GameManager, then swaps in
-## levels/level_0N.tscn.
 func goto_level(index: int) -> void:
 	if _busy:
 		return
@@ -50,7 +40,6 @@ func goto_level(index: int) -> void:
 	GameManager.begin_level(index, data)
 	await _change_scene(scene_path)
 
-
 func goto_scene(path: String) -> void:
 	if _busy:
 		return
@@ -59,15 +48,12 @@ func goto_scene(path: String) -> void:
 		return
 	await _change_scene(path)
 
-
 func goto_main_menu() -> void:
 	await goto_scene(MAIN_MENU_SCENE)
-
 
 func reload_current_level() -> void:
 	if GameManager.current_level > 0:
 		await goto_level(GameManager.current_level)
-
 
 func fade_to(alpha: float) -> void:
 	var tween := create_tween()
@@ -75,11 +61,9 @@ func fade_to(alpha: float) -> void:
 	tween.tween_property(_fade, "color:a", alpha, FADE_SECONDS)
 	await tween.finished
 
-
 func _change_scene(path: String) -> void:
 	_busy = true
 	await fade_to(1.0)
-	# A level left the tree paused behind it? Start the new scene clean.
 	get_tree().paused = false
 	var err := get_tree().change_scene_to_file(path)
 	if err != OK:
@@ -89,4 +73,5 @@ func _change_scene(path: String) -> void:
 		return
 	await get_tree().process_frame
 	await fade_to(0.0)
+	_fade.color.a = 0.0
 	_busy = false

@@ -5,7 +5,7 @@
 [ext_resource type="Resource" path="res://enemies/heli.tres" id="3_data"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_hitbox"]
-size = Vector2(26, 26)
+size = Vector2(32, 44)
 
 [node name="Heli" type="Area2D"]
 collision_layer = 4
@@ -17,6 +17,7 @@ sine_amplitude = 50.0
 sine_frequency = 1.8
 
 [node name="Sprite" type="Sprite2D" parent="."]
+scale = Vector2(0.45, 0.45)
 texture = ExtResource("2_sprite")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]

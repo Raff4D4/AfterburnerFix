@@ -1,9 +1,5 @@
 extends Node2D
 class_name ShieldRing
-## Procedural shield bubble (design spec §4.2).
-##
-## Drawn with _draw() so the shield needs no art file, and `energy` (0..1) tracks
-## the remaining lifetime so the bubble visibly thins out as it expires.
 
 const RADIUS := 26.0
 
@@ -12,8 +8,6 @@ var energy := 0.0
 var _phase := 0.0
 var _redraw := false
 
-
-## 1.0 right after a pick-up, falling to 0 as the timer runs out.
 func set_energy(value: float) -> void:
 	var clamped := clampf(value, 0.0, 1.0)
 	if is_equal_approx(energy, clamped):
@@ -23,13 +17,11 @@ func set_energy(value: float) -> void:
 	visible = energy > 0.0
 	queue_redraw()
 
-
 func _process(delta: float) -> void:
 	if not _redraw:
 		return
 	_phase += delta
 	queue_redraw()
-
 
 func _draw() -> void:
 	if energy <= 0.0:

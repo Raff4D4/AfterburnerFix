@@ -7,7 +7,7 @@
 [ext_resource type="PackedScene" path="res://enemies/heli.tscn" id="5_add_alt"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_boss"]
-size = Vector2(64, 58)
+size = Vector2(96, 120)
 
 [node name="BossDreadnought" type="Area2D"]
 collision_layer = 4
@@ -19,13 +19,14 @@ score_value = 5000
 bullet_scene = ExtResource("3_bullet")
 add_scene = ExtResource("4_add")
 add_scene_alt = ExtResource("5_add_alt")
-muzzle_offsets = Array[Vector2]([Vector2(0, 0)])
+muzzle_offsets = Array[Vector2]([Vector2(0, 30)])
 fire_speed = 160.0
 hover_amplitude = 120.0
 hover_frequency = 0.25
+hover_depth = 20.0
 
 [node name="Sprite" type="Sprite2D" parent="."]
-scale = Vector2(2.4, 2.4)
+scale = Vector2(1.2, 1.2)
 modulate = Color(0.62, 0.2, 0.22, 1)
 texture = ExtResource("2_sprite")
 

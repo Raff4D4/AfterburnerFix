@@ -126,7 +126,12 @@ func _entity_container() -> Node:
 func _living_enemy_count() -> int:
 	var count := 0
 	for node in get_tree().get_nodes_in_group(&"enemies"):
-		if node is Enemy and node.is_alive():
+		if not is_instance_valid(node) or node.is_queued_for_deletion():
+			continue
+		if node.has_method(&"is_alive"):
+			if node.is_alive():
+				count += 1
+		elif node is Node2D and node.visible:
 			count += 1
 	return count
 

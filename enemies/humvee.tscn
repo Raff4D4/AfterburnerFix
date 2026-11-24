@@ -5,7 +5,7 @@
 [ext_resource type="Resource" path="res://enemies/humvee.tres" id="3_data"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_hitbox"]
-size = Vector2(22, 28)
+size = Vector2(24, 36)
 
 [node name="Humvee" type="Area2D"]
 collision_layer = 4
@@ -15,6 +15,7 @@ data = ExtResource("3_data")
 movement_speed = 55.0
 
 [node name="Sprite" type="Sprite2D" parent="."]
+scale = Vector2(0.5, 0.5)
 texture = ExtResource("2_sprite")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
