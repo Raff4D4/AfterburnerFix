@@ -78,13 +78,16 @@ func enter_boss_arena() -> void:
 	var data := GameManager.level_data
 	if data == null or data.boss_scene == null:
 		return
+	var cam_center := _camera.get_screen_center_position()
 	var arena := get_node_or_null("BossArena") as Marker2D
 	if arena != null:
-		_camera.position = arena.global_position
+		arena.global_position = cam_center
 	var boss := data.boss_scene.instantiate()
 	_entities.add_child(boss)
-	if boss is Node2D and arena != null:
-		boss.global_position = arena.global_position + Vector2(0, -80)
+	if boss.has_method(&"setup_arena"):
+		boss.setup_arena(cam_center)
+	elif boss is Node2D:
+		boss.global_position = Vector2(cam_center.x, cam_center.y - 230.0)
 	EventBus.boss_started.emit(boss)
 
 func _on_level_completed(index: int) -> void:

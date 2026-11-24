@@ -37,6 +37,7 @@ var _age := 0.0
 var _origin_x := 0.0
 var _home_y := 0.0
 var _entered := false
+var _spawn_initialized := false
 var _fire_timer := 0.0
 var _add_timer := 0.0
 var _spiral_timer := 0.0
@@ -57,11 +58,18 @@ func _ready() -> void:
 	if max_health_override > 0:
 		_max_health = max_health_override
 	_health = _max_health
-	_origin_x = global_position.x
-	_home_y = global_position.y + hover_depth
 	_fire_timer = 1.2
 	body_entered.connect(_on_body_entered)
 	area_entered.connect(_on_area_entered)
+	EventBus.boss_health_changed.emit(_health, _max_health)
+	EventBus.boss_phase_changed.emit(_phase, _phase_count)
+
+func setup_arena(center: Vector2) -> void:
+	_origin_x = center.x
+	_home_y = center.y - 95.0
+	global_position = Vector2(_origin_x, center.y - 230.0)
+	_entered = false
+	_spawn_initialized = true
 	EventBus.boss_health_changed.emit(_health, _max_health)
 	EventBus.boss_phase_changed.emit(_phase, _phase_count)
 
@@ -83,11 +91,26 @@ func is_alive() -> bool:
 func _physics_process(delta: float) -> void:
 	if _dead:
 		return
+	if not _spawn_initialized:
+		_init_spawn_position()
 	_age += delta
 	_update_phase()
 	_move(delta)
 	_update_fire(delta)
 	_update_adds(delta)
+
+func _init_spawn_position() -> void:
+	_spawn_initialized = true
+	var camera := get_viewport().get_camera_2d()
+	if camera != null:
+		var cam := camera.get_screen_center_position()
+		_origin_x = cam.x
+		_home_y = cam.y - 95.0
+		if global_position.is_zero_approx() or global_position.y < cam.y - 300.0 or global_position.y > cam.y + 300.0:
+			global_position = Vector2(_origin_x, cam.y - 230.0)
+	else:
+		_origin_x = global_position.x
+		_home_y = global_position.y + hover_depth
 
 func _configure_kind() -> void:
 	match boss_kind:
@@ -131,9 +154,10 @@ func _update_phase() -> void:
 func _move(delta: float) -> void:
 	if not _entered:
 		var remaining := maxf(_home_y - global_position.y, 0.0)
-		global_position.y += minf(40.0 * delta, remaining)
-		if remaining <= 0.5:
+		global_position.y += minf(60.0 * delta, remaining)
+		if remaining <= 1.0:
 			_entered = true
+			global_position.y = _home_y
 	else:
 		global_position.y = _home_y
 	global_position.x = _origin_x + sin(_age * TAU * hover_frequency) * hover_amplitude

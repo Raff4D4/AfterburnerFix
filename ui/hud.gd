@@ -81,6 +81,15 @@ func _on_boss_started(boss: Node) -> void:
 	var name_value: Variant = null
 	if boss != null:
 		name_value = boss.get(&"display_name")
+		if boss.has_method(&"get_health") and boss.has_method(&"get_max_health"):
+			var cur := int(boss.get_health())
+			var mx := int(boss.get_max_health())
+			if mx > 0:
+				_boss_health.max_value = float(mx)
+				_boss_health.value = float(clampi(cur, 0, mx))
+		if boss.has_method(&"get_phase") and boss.has_method(&"get_phase_count"):
+			_boss_phase = int(boss.get_phase())
+			_boss_phase_count = maxi(int(boss.get_phase_count()), 1)
 	_boss_display_name = str(name_value) if name_value != null else "BOSS"
 	_boss_bar.visible = true
 	_update_boss_label()

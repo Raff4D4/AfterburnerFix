@@ -13,7 +13,8 @@ func _ready() -> void:
 	if is_equal_approx(scale.x, 1.0) and is_equal_approx(scale.y, 1.0):
 		scale = Vector2(0.45, 0.45)
 	var sf := SpriteFrames.new()
-	sf.add_animation(&"default")
+	if not sf.has_animation(&"default"):
+		sf.add_animation(&"default")
 	sf.set_animation_speed(&"default", 16.0)
 	sf.set_animation_loop(&"default", false)
 	for tex in FRAMES:
