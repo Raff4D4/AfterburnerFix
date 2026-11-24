@@ -1,9 +1,5 @@
 @tool
 extends SceneTree
-## One-off project bootstrap. Run headless, then delete:
-##   godot --headless --path <project> --script res://_tools/setup_project.gd
-## Writes autoloads, input map, 640x360 pixel-art viewport and Nearest filter
-## through ProjectSettings so project.godot gets Godot's own serialization.
 
 const AUTOLOADS := {
 	"EventBus": "res://autoload/EventBus.gd",
@@ -19,8 +15,6 @@ func _initialize() -> void:
 		ProjectSettings.set_setting("autoload/" + alias, "*" + AUTOLOADS[alias])
 
 	ProjectSettings.set_setting("audio/buses/default_bus_layout", "res://default_bus_layout.tres")
-
-	# 0 = Nearest: keeps the pixel art crisp instead of blurred.
 	ProjectSettings.set_setting("rendering/textures/canvas_textures/default_texture_filter", 0)
 	ProjectSettings.set_setting("display/window/stretch/mode", "canvas_items")
 	ProjectSettings.set_setting("display/window/stretch/aspect", "expand")
@@ -33,8 +27,6 @@ func _initialize() -> void:
 	_add_action(&"move_down", [KEY_S, KEY_DOWN])
 	_add_action(&"move_left", [KEY_A, KEY_LEFT])
 	_add_action(&"move_right", [KEY_D, KEY_RIGHT])
-	# Fire keeps Space (the original GameMaker build shot with Space); the dash
-	# takes Shift, with J/Z and K/X as right-hand alternatives.
 	_add_action(&"fire", [KEY_SPACE, KEY_J, KEY_Z])
 	_add_action(&"barrel_roll", [KEY_SHIFT, KEY_K, KEY_X])
 

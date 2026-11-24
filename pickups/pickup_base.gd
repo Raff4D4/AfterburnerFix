@@ -23,6 +23,14 @@ var _taken := false
 func _ready() -> void:
 	add_to_group(GROUP)
 	body_entered.connect(_on_body_entered)
+	area_entered.connect(_on_area_entered)
+
+func _on_area_entered(area: Area2D) -> void:
+	if _taken:
+		return
+	var player := area.get_parent() as Node2D
+	if player != null and player.is_in_group(&"player"):
+		_on_body_entered(player)
 
 func _process(delta: float) -> void:
 	_age += delta

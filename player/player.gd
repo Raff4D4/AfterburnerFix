@@ -5,8 +5,8 @@ const MOVE_SPEED := 170.0
 const ROLL_SPEED := 520.0
 const ROLL_DURATION := 0.3
 const ROLL_COOLDOWN := 1.0
-const HIT_INVULNERABILITY := 1.2
-const SHIELD_DURATION := 6.0
+const HIT_INVULNERABILITY := 1.0
+const SHIELD_DURATION := 5.0
 const PLAYFIELD_MARGIN := 10.0
 
 const ENGINE_TEXTURES: Array[Texture2D] = [
@@ -89,7 +89,16 @@ func is_alive() -> bool:
 	return not _is_dead
 
 func take_damage(_amount: int = 1) -> bool:
-	if _is_dead or is_invulnerable():
+	if _is_dead:
+		return false
+	if _shield_timer > 0.0:
+		_shield_timer = maxf(_shield_timer - 1.5, 0.0)
+		_invuln_timer = 0.3
+		if _shield_timer <= 0.0:
+			_shield_ring.set_energy(0.0)
+			EventBus.shield_changed.emit(0.0)
+		return true
+	if is_invulnerable():
 		return false
 	_invuln_timer = HIT_INVULNERABILITY
 	AudioManager.play_sfx(hit_sfx)
@@ -185,11 +194,20 @@ func _die() -> void:
 func _on_player_died() -> void:
 	_die()
 
-func _on_hurtbox_area_entered(_area: Area2D) -> void:
-	take_damage()
+func _on_hurtbox_area_entered(area: Area2D) -> void:
+	if area.is_in_group(&"enemy_bullets"):
+		take_damage()
+		area.call_deferred(&"queue_free")
+	elif area.is_in_group(&"enemies"):
+		take_damage()
+		if area.has_method(&"take_damage"):
+			area.take_damage(1)
 
-func _on_hurtbox_body_entered(_body: Node2D) -> void:
-	take_damage()
+func _on_hurtbox_body_entered(body: Node2D) -> void:
+	if body.is_in_group(&"enemies") or body.is_in_group(&"enemy_bullets"):
+		take_damage()
+		if body.has_method(&"take_damage"):
+			body.take_damage(1)
 
 func _use_bomb() -> void:
 	if _is_dead or not GameManager.use_bomb():

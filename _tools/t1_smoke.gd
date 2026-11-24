@@ -1,6 +1,4 @@
 extends Node2D
-## One-off Tahap 1 smoke test, run as a real main scene so autoload _ready()
-## has fired the way it will during actual gameplay.
 
 func _ready() -> void:
 	print("=== T1 smoke test ===")

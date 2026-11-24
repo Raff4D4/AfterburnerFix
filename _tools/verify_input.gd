@@ -1,5 +1,4 @@
 extends SceneTree
-## One-off probe: input map, autoload wiring, project settings.
 
 func _initialize() -> void:
 	var probe := InputEventKey.new()
@@ -15,8 +14,6 @@ func _initialize() -> void:
 			desc.append("%s(dev=%d)" % [OS.get_keycode_string(e.physical_keycode), e.device])
 		print(a, " => ", ", ".join(desc))
 
-	# Matching is exact on device; a real OS event carries the engine default,
-	# which is what InputEventKey.new() reports here.
 	var fk := InputEventKey.new()
 	fk.pressed = true
 	fk.physical_keycode = KEY_SPACE

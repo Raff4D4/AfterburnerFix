@@ -9,10 +9,10 @@ size = Vector2(24, 36)
 
 [node name="Humvee" type="Area2D"]
 collision_layer = 4
-collision_mask = 2
+collision_mask = 3
 script = ExtResource("1_enemy")
 data = ExtResource("3_data")
-movement_speed = 55.0
+movement_speed = 35.0
 
 [node name="Sprite" type="Sprite2D" parent="."]
 scale = Vector2(0.5, 0.5)

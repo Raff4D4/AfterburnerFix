@@ -9,14 +9,14 @@ size = Vector2(120, 64)
 
 [node name="BossTwin" type="Area2D"]
 collision_layer = 4
-collision_mask = 2
+collision_mask = 3
 script = ExtResource("1_boss")
 boss_kind = "twin"
 display_name = "TWIN GUNSHIP"
 score_value = 3500
 bullet_scene = ExtResource("3_bullet")
 muzzle_offsets = Array[Vector2]([Vector2(-42, 15), Vector2(42, 15)])
-fire_speed = 180.0
+fire_speed = 140.0
 hover_amplitude = 110.0
 hover_frequency = 0.45
 hover_depth = 20.0

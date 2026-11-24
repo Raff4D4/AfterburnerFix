@@ -1,7 +1,9 @@
 extends Node
 
 const STARTING_LIVES := 3
+const MAX_LIVES := 5
 const STARTING_BOMBS := 1
+const MAX_BOMBS := 3
 
 var current_level: int = 0
 var level_data: LevelData = null
@@ -35,7 +37,7 @@ func add_score(value: int) -> void:
 func add_life(amount: int = 1) -> void:
 	if amount == 0:
 		return
-	lives = maxi(lives + amount, 0)
+	lives = clampi(lives + amount, 0, MAX_LIVES)
 	EventBus.lives_changed.emit(lives)
 
 func lose_life() -> bool:
@@ -52,7 +54,7 @@ func lose_life() -> bool:
 func add_bomb(amount: int = 1) -> void:
 	if amount == 0:
 		return
-	bombs = maxi(bombs + amount, 0)
+	bombs = clampi(bombs + amount, 0, MAX_BOMBS)
 	EventBus.bomb_changed.emit(bombs)
 
 func use_bomb() -> bool:

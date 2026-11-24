@@ -4,7 +4,7 @@ class_name EnemyBullet
 const DESPAWN_MARGIN := 32.0
 const GROUP: StringName = &"enemy_bullets"
 
-@export var speed := 170.0
+@export var speed := 130.0
 @export var damage := 1
 @export var direction := Vector2.DOWN
 @export var tint := Color(1.0, 0.6, 0.45)
@@ -18,6 +18,7 @@ func _ready() -> void:
 	scale = Vector2.ONE * bullet_scale
 	_apply_direction()
 	body_entered.connect(_on_body_entered)
+	area_entered.connect(_on_area_entered)
 
 func configure(
 	p_speed: float,
@@ -38,9 +39,21 @@ func _physics_process(delta: float) -> void:
 		queue_free()
 
 func _on_body_entered(body: Node2D) -> void:
-	if not body.has_method(&"take_damage"):
+	_hit(body)
+
+func _on_area_entered(area: Area2D) -> void:
+	if area.is_in_group(&"player"):
+		_hit(area)
+	elif area.name == "Hurtbox":
+		var parent_node := area.get_parent()
+		if parent_node != null:
+			_hit(parent_node)
+
+func _hit(target: Node) -> void:
+	if target == null:
 		return
-	body.take_damage(damage)
+	if target.has_method(&"take_damage"):
+		target.take_damage(damage)
 	call_deferred(&"queue_free")
 
 func _apply_direction() -> void:

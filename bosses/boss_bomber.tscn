@@ -9,14 +9,14 @@ size = Vector2(74, 90)
 
 [node name="BossBomber" type="Area2D"]
 collision_layer = 4
-collision_mask = 2
+collision_mask = 3
 script = ExtResource("1_boss")
 boss_kind = "bomber"
 display_name = "BOMBER COMMAND"
 score_value = 2500
 bullet_scene = ExtResource("3_bullet")
 muzzle_offsets = Array[Vector2]([Vector2(0, 25)])
-fire_speed = 150.0
+fire_speed = 130.0
 hover_amplitude = 80.0
 hover_frequency = 0.3
 hover_depth = 20.0

@@ -9,11 +9,11 @@ size = Vector2(36, 48)
 
 [node name="Bomber" type="Area2D"]
 collision_layer = 4
-collision_mask = 2
+collision_mask = 3
 script = ExtResource("1_enemy")
 data = ExtResource("3_data")
-movement_speed = 45.0
-hover_distance = 100.0
+movement_speed = 28.0
+hover_distance = 80.0
 
 [node name="Sprite" type="Sprite2D" parent="."]
 scale = Vector2(0.45, 0.45)

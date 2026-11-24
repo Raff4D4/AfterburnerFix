@@ -20,8 +20,8 @@ scroll_speed = 70.0
 boss_scene = ExtResource("2_boss")
 waves = Array[WaveData]([ExtResource("3_wave1"), ExtResource("4_wave2"), ExtResource("5_wave3"), ExtResource("6_wave4"), ExtResource("7_wave5"), ExtResource("8_wave6"), ExtResource("9_wave7")])
 difficulty = {
-"enemy_speed_mult": 1.6,
-"enemy_hp_bonus": 3,
-"fire_rate_mult": 1.6,
-"spawn_density_mult": 1.6
+"enemy_speed_mult": 1.35,
+"enemy_hp_bonus": 2,
+"fire_rate_mult": 1.35,
+"spawn_density_mult": 1.4
 }

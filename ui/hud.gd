@@ -33,6 +33,10 @@ func _ready() -> void:
 	_wave_label.text = ""
 	_combo_label.text = ""
 	_boss_bar.visible = false
+	_on_lives_changed(GameManager.lives)
+	_on_score_changed(GameManager.score)
+	_on_bomb_changed(GameManager.bombs)
+	_on_weapon_changed(GameManager.weapon)
 
 func _on_score_changed(value: int) -> void:
 	_score_label.text = "SCORE: %d" % value

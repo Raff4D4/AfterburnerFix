@@ -8,8 +8,8 @@ const HIT_FLASH_TIME := 0.07
 
 @export var data: EnemyData
 @export var fallback_bullet_scene: PackedScene
-@export var movement_speed := 70.0
-@export var fire_speed := 170.0
+@export var movement_speed := 42.0
+@export var fire_speed := 130.0
 @export var bullet_damage := 1
 @export var bullet_tint := Color(1.0, 0.6, 0.45)
 @export var bullet_scale := 1.0
@@ -47,6 +47,25 @@ func _ready() -> void:
 	_base_modulate = _sprite.modulate
 	_read_difficulty()
 	_apply_data()
+	body_entered.connect(_on_body_entered)
+	area_entered.connect(_on_area_entered)
+
+func _on_body_entered(body: Node2D) -> void:
+	if body.is_in_group(&"player"):
+		if body.has_method(&"take_damage"):
+			body.take_damage(1)
+		take_damage(1)
+
+func _on_area_entered(area: Area2D) -> void:
+	if area.is_in_group(&"player"):
+		if area.has_method(&"take_damage"):
+			area.take_damage(1)
+		take_damage(1)
+	elif area.name == "Hurtbox":
+		var player := area.get_parent()
+		if player != null and player.is_in_group(&"player") and player.has_method(&"take_damage"):
+			player.take_damage(1)
+		take_damage(1)
 
 func is_alive() -> bool:
 	return not _dead and is_inside_tree() and not is_queued_for_deletion()
@@ -302,12 +321,7 @@ func _spawn_drop() -> void:
 		pickup.global_position = global_position
 
 func _pick_drop() -> PackedScene:
-	var total := 0.0
-	for entry in data.drop_table:
-		total += float(entry.get("weight", 1.0))
-	if total <= 0.0:
-		return null
-	var roll := randf() * total
+	var roll := randf()
 	var accumulated := 0.0
 	for entry in data.drop_table:
 		accumulated += float(entry.get("weight", 1.0))

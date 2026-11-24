@@ -9,12 +9,12 @@ size = Vector2(32, 44)
 
 [node name="Heli" type="Area2D"]
 collision_layer = 4
-collision_mask = 2
+collision_mask = 3
 script = ExtResource("1_enemy")
 data = ExtResource("3_data")
-movement_speed = 60.0
-sine_amplitude = 50.0
-sine_frequency = 1.8
+movement_speed = 38.0
+sine_amplitude = 35.0
+sine_frequency = 1.4
 
 [node name="Sprite" type="Sprite2D" parent="."]
 scale = Vector2(0.45, 0.45)

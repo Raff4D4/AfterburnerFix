@@ -17,7 +17,7 @@ const ADD_INTERVAL := 3.0
 
 @export var muzzle_offsets: Array[Vector2] = [Vector2.ZERO]
 
-@export var fire_speed := 170.0
+@export var fire_speed := 135.0
 @export var bullet_damage := 1
 @export var hover_amplitude := 90.0
 @export var hover_frequency := 0.35
@@ -60,8 +60,22 @@ func _ready() -> void:
 	_origin_x = global_position.x
 	_home_y = global_position.y + hover_depth
 	_fire_timer = 1.2
+	body_entered.connect(_on_body_entered)
+	area_entered.connect(_on_area_entered)
 	EventBus.boss_health_changed.emit(_health, _max_health)
 	EventBus.boss_phase_changed.emit(_phase, _phase_count)
+
+func _on_body_entered(body: Node2D) -> void:
+	if body.is_in_group(&"player") and body.has_method(&"take_damage"):
+		body.take_damage(1)
+
+func _on_area_entered(area: Area2D) -> void:
+	if area.is_in_group(&"player") and area.has_method(&"take_damage"):
+		area.take_damage(1)
+	elif area.name == "Hurtbox":
+		var player := area.get_parent()
+		if player != null and player.is_in_group(&"player") and player.has_method(&"take_damage"):
+			player.take_damage(1)
 
 func is_alive() -> bool:
 	return not _dead and is_inside_tree() and not is_queued_for_deletion()
@@ -171,6 +185,9 @@ func _update_adds(delta: float) -> void:
 	var scene := add_scene_alt if (_phase >= 2 and add_scene_alt != null) else add_scene
 	if scene == null:
 		return
+	var active_adds := get_tree().get_nodes_in_group(&"enemies").size() - 1
+	if active_adds >= 3:
+		return
 	_add_timer -= delta
 	if _add_timer > 0.0:
 		return
@@ -210,6 +227,11 @@ func _die() -> void:
 	EventBus.boss_health_changed.emit(0, _max_health)
 	GameManager.add_score(score_value)
 	AudioManager.play_sfx(death_sfx)
+	for bullet in get_tree().get_nodes_in_group(&"enemy_bullets"):
+		bullet.queue_free()
+	for enemy in get_tree().get_nodes_in_group(&"enemies"):
+		if enemy != self and enemy.has_method(&"take_damage"):
+			enemy.take_damage(99)
 	var parent_node := get_parent()
 	if parent_node != null:
 		var exp_node = preload("res://effects/explosion.gd").new()

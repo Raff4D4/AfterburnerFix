@@ -9,14 +9,14 @@ size = Vector2(64, 80)
 
 [node name="BossHeli" type="Area2D"]
 collision_layer = 4
-collision_mask = 2
+collision_mask = 3
 script = ExtResource("1_boss")
 boss_kind = "heli"
 display_name = "GUNSHIP HELI"
 score_value = 1500
 bullet_scene = ExtResource("3_bullet")
 muzzle_offsets = Array[Vector2]([Vector2(0, 20)])
-fire_speed = 170.0
+fire_speed = 135.0
 hover_amplitude = 100.0
 hover_frequency = 0.4
 hover_depth = 20.0

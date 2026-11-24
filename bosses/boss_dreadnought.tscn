@@ -11,7 +11,7 @@ size = Vector2(96, 120)
 
 [node name="BossDreadnought" type="Area2D"]
 collision_layer = 4
-collision_mask = 2
+collision_mask = 3
 script = ExtResource("1_boss")
 boss_kind = "dreadnought"
 display_name = "WARLORD DREADNOUGHT"
@@ -20,7 +20,7 @@ bullet_scene = ExtResource("3_bullet")
 add_scene = ExtResource("4_add")
 add_scene_alt = ExtResource("5_add_alt")
 muzzle_offsets = Array[Vector2]([Vector2(0, 30)])
-fire_speed = 160.0
+fire_speed = 135.0
 hover_amplitude = 120.0
 hover_frequency = 0.25
 hover_depth = 20.0
